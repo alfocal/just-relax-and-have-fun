@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Just Relax and Have Fun - Pixel Art Gallery</title>
+  <meta name="description" content="Galería de retos semanales de pixel art entre amigos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Header -->
+    <header class="site-header">
+      <div class="container header-container">
+        <div class="logo-area">
+          <span class="pixel-badge">👾 RETOS SEMANALES</span>
+          <h1 class="pixel-title">Just Relax and Have Fun</h1>
+          <p class="subtitle">Desafíos semanales de Pixel Art.</p>
+        </div>
+        <div class="header-links">
+          <div class="theme-picker">
+            <label for="theme-select" class="theme-picker-label">🎨 Tema:</label>
+            <select id="theme-select" class="retro-select theme-select" title="Cambiar tema visual de la página">
+              <option value="dark">🌙 Oscuro</option>
+              <option value="light">☀️ Claro</option>
+              <option value="gameboy">📟 Game Boy</option>
+              <option value="pico8">🕹️ Pico-8</option>
+              <option value="cyberpunk">👾 Cyberpunk</option>
+            </select>
+          </div>
+          <a href="https://github.com/alfocal/just-relax-and-have-fun" class="retro-btn" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+          <a href="https://github.com/alfocal/just-relax-and-have-fun/blob/main/PixelArt/README.md" class="retro-btn btn-secondary" target="_blank" rel="noopener">
+            📜 Reglas
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar">
+      <div class="container stats-container">
+        <div class="stat-pill">
+          <span class="stat-label">Semanas activas</span>
+          <span class="stat-value" id="stat-challenges">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Obras subidas</span>
+          <span class="stat-value" id="stat-artworks">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Lienzo</span>
+          <span class="stat-value highlight">32×32 px</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Paletas</span>
+          <span class="stat-value">Lospec Random</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls / Filters -->
+    <section class="filters-bar">
+      <div class="container filters-container">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="🔍 Buscar por tema, usuario o semana..." autocomplete="off">
+        </div>
+        <div class="filter-actions">
+          <select id="filter-week" class="retro-select">
+            <option value="all">Todas las semanas</option>
+          </select>
+          <select id="filter-author" class="retro-select">
+            <option value="all">Todos los autores</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
+        <div id="gallery-container" class="challenges-feed">
+          <div class="loading-state">
+            <div class="pixel-spinner"></div>
+            <p>Cargando galería de pixel art...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container footer-content">
+        <p>🎮 <strong>Just Relax and Have Fun</strong> — Comunidad de pixel art semanal.</p>
+        <p class="footer-sub">Generado con paletas de <a href="https://lospec.com" target="_blank" rel="noopener">Lospec</a></p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal / Lightbox Pixel-Perfect -->
+  <div id="pixel-modal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog">
+      <button class="modal-close" id="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+
+      <div class="modal-body">
+        <div class="modal-preview-wrapper checker-bg" id="modal-canvas-wrapper">
+          <img id="modal-image" src="" alt="Pixel Art Zoom" class="pixel-art-view">
+        </div>
+
+        <div class="modal-info-panel">
+          <div class="modal-header-meta">
+            <span class="modal-badge" id="modal-week">W42</span>
+            <h3 class="modal-title" id="modal-title">Obra</h3>
+            <p class="modal-author">Por <strong id="modal-author-name">@autor</strong></p>
+          </div>
+
+          <div class="modal-controls">
+            <label class="control-label">Zoom:</label>
+            <div class="btn-group" id="zoom-buttons">
+              <button class="btn-sm" data-zoom="2">2x</button>
+              <button class="btn-sm" data-zoom="4">4x</button>
+              <button class="btn-sm active" data-zoom="8">8x</button>
+              <button class="btn-sm" data-zoom="12">12x</button>
+              <button class="btn-sm" data-zoom="16">16x</button>
+            </div>
+
+            <label class="control-label">Fondo:</label>
+            <div class="btn-group" id="bg-buttons">
+              <button class="btn-sm active" data-bg="checker">Transparente</button>
+              <button class="btn-sm" data-bg="dark">Oscuro</button>
+              <button class="btn-sm" data-bg="light">Claro</button>
+            </div>
+          </div>
+
+          <div class="modal-meta-details">
+            <div class="meta-row">
+              <span class="meta-key">Tema:</span>
+              <span class="meta-val" id="modal-theme">-</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-key">Paleta:</span>
+              <span class="meta-val" id="modal-palette">-</span>
+            </div>
+          </div>
+
+          <div class="modal-actions" id="modal-actions">
+            <!-- Botones dinámicos de descarga y archivo fuente -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

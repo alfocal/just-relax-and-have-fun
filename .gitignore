@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Builds y temporales
+node_modules/
+dist/
+_site/
+docs/data.json
+__pycache__/
+*.pyc
