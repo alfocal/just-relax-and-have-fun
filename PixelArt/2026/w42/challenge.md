@@ -11,4 +11,4 @@
 
 ## 👥 Participaciones
 
-- [@alfocal](alfocal/): Participación inicial ([test2.png](alfocal/test2.png))
+- [@usuario](usuario/): Participación de ejemplo ([test2.png](usuario/test2.png))
