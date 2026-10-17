@@ -87,16 +87,33 @@ PixelArt/
   - Guarda tu obra en formato `.png`.
   - **Agrandado / Reescalado:** Como 32×32 píxeles se ve diminuto en pantallas modernas, exporta una versión escalada a **4x (128×128)**, **8x (256×256)** o **16x (512×512)**.
   - ⚠️ **Muy Importante:** Al reescalar o exportar, usa el filtro de interpolación **Vecino más próximo (*Nearest Neighbor* / Por aproximación)** para que los píxeles se mantengan 100% nítidos y no se vean borrosos.
-  - Si quieres, también puedes incluir la versión a 32×32 original (ej. `dibujo_32x32.png` y `dibujo_large.png`).
+  - Si quieres, también puedes incluir la versión a 32×32 original (ej. `dibujo_32x32.png` y `dibujo_large.png`). Los archivos con el mismo nombre y un sufijo de tamaño (`_32x32`, `_8x`, `@8x`, `_large`, `_grande`...) se muestran como una sola obra.
+- **🎞️ GIF animado (Opcional):**
+  - ¿Te animas a darle movimiento? Sube tu obra como `.gif` animado, con los mismos colores de la paleta. En la galería se reproduce sola y lleva la etiqueta **▶ GIF**.
+  - Puedes exportarlo a 32×32 o escalado (en Aseprite: *Archivo → Exportar como…* con formato `.gif` y el escalado que quieras); los GIF pequeños se amplían en la galería sin perder nitidez.
+  - Si subes la versión estática y la animada con el mismo nombre (`dibujo.png` + `dibujo.gif`), se muestran como una sola obra: se ve la animada y la estática queda para descargar.
 - **💾 Fichero fuente (Opcional):**
   - Si quieres compartir tu proceso o capas, añade el archivo de origen de tu programa: `.aseprite`, `.psd`, `.kra`, etc.
+  - Ponle el mismo nombre que a su imagen (`dibujo.png` + `dibujo.aseprite`) para que la galería sepa a qué obra pertenece.
 
-### 3. Enviar mediante Pull Request
+### 3. ¿Más de un diseño en la misma semana?
+¡Claro! Pon todos en tu carpeta, directamente (sin subcarpetas), cada uno con su propio nombre:
+
+```text
+tu_usuario/
+├── gato.png
+├── gato.aseprite
+├── perro.png
+└── perro.aseprite
+```
+
+### 4. Enviar mediante Pull Request
 1. Crea una nueva rama en git (ej. `git checkout -b w42-tu-usuario`).
 2. Añade tu carpeta con tus archivos.
 3. Haz push a tu fork o al repositorio.
 4. Abre una **Pull Request** con un título descriptivo (ej: `W42 - Participación de tu_usuario`).
-5. ¡Una vez revisada y aprobada, tu obra aparecerá automáticamente en la galería web!
+5. Se revisará automáticamente que la galería entienda tus archivos (por ejemplo, que cada archivo fuente tenga su imagen). Si algo falla, verás el motivo en la propia PR.
+6. ¡Una vez revisada y aprobada, tu obra aparecerá automáticamente en la galería web!
 
 ---
 

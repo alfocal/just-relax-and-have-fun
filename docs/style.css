@@ -513,6 +513,21 @@ body::before {
   transform: scale(1.08);
 }
 
+/* Etiqueta para GIFs animados */
+.artwork-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  color: var(--color-yellow);
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  border-radius: 3px;
+  padding: 4px 5px;
+  pointer-events: none;
+}
+
 /* Checkerboard background for transparent PNGs */
 .checker-bg {
   background-color: #1e2235;

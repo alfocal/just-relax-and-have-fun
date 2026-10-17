@@ -54,9 +54,11 @@ Participar es tan fácil como enviar una **Pull Request**:
        └── w42/
            └── tu_nombre_de_usuario/
                ├── mi_dibujo.png       <-- PNG reescalado (ej. 256x256 con Nearest Neighbor)
+               ├── mi_dibujo.gif       <-- Versión animada (opcional)
                └── mi_dibujo.aseprite  <-- Archivo de trabajo editable (opcional)
    ```
-4. **Envía tu Pull Request:** Abre un PR con el título `W<semana> - <tu_usuario>` y ¡listo! En cuanto se apruebe, tu dibujo aparecerá en la web automáticamente.
+   ¿Más de un diseño esa semana? Ponlos todos en tu carpeta, cada uno con su nombre y su archivo fuente con el mismo nombre (`gato.png` + `gato.aseprite`, `perro.png` + `perro.aseprite`).
+4. **Envía tu Pull Request:** Abre un PR con el título `W<semana> - <tu_usuario>`. Se comprobará automáticamente que la galería entienda tus archivos. En cuanto se apruebe, tu dibujo aparecerá en la web automáticamente.
 
 ---
 
@@ -72,24 +74,26 @@ Disponemos de un visor interactivo publicado con GitHub Pages donde puedes ver t
 
 ```text
 just-relax-and-have-fun/
-├── .github/workflows/         # Automatización de despliegue a GitHub Pages
-│   └── deploy-pages.yml
+├── .github/workflows/
+│   ├── deploy-pages.yml           # Despliegue a GitHub Pages
+│   └── validate-submissions.yml   # Revisión automática de cada Pull Request
 ├── docs/                      # Archivos de la Galería Web (GitHub Pages)
 │   ├── index.html             # Interfaz web retro de la galería
 │   ├── style.css              # Estilos pixel art / retro arcade
 │   ├── app.js                 # Lógica interactiva y visor modal
 │   └── data.json              # Índice generado de retos y obras
 ├── scripts/
-│   └── build_gallery.py       # Generador automático del índice de obras
+│   └── build_gallery.py       # Generador del índice de obras y validador de participaciones
 ├── PixelArt/
 │   ├── README.md              # Reglas oficiales y guía paso a paso
 │   └── 2026/
 │       └── w42/
 │           ├── challenge.md   # Información del reto (tema y paleta Lospec)
-│           └── alfocal/
-│               ├── test.png
-│               └── test.aseprite
+│           └── usuario/       # Participación de ejemplo
+│               ├── test2.png
+│               └── test3.aseprite
 ├── .gitignore
+├── CLAUDE.md                  # Guía del proyecto para Claude Code
 └── README.md
 ```
 

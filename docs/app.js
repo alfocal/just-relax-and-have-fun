@@ -3,6 +3,9 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Tamaño aproximado (px) al que se amplían en las tarjetas las imágenes pequeñas
+  const CARD_IMAGE_SIZE = 192;
+
   const state = {
     challenges: [],
     selectedWeek: 'all',
@@ -87,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let count = 0;
     challenges.forEach(c => {
       (c.submissions || []).forEach(s => {
-        count += (s.images || []).length;
+        count += (s.artworks || []).length;
       });
     });
     return count;
@@ -193,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const matchesPalette = (c.palette?.name || '').toLowerCase().includes(q);
         const matchesSubmissions = (c.submissions || []).some(s => 
           s.author.toLowerCase().includes(q) || 
-          (s.images || []).some(img => img.filename.toLowerCase().includes(q))
+          (s.artworks || []).some(art => art.name.toLowerCase().includes(q))
         );
 
         if (!matchesTheme && !matchesWeek && !matchesYear && !matchesPalette && !matchesSubmissions) {
@@ -278,9 +281,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      (sub.images || []).forEach(img => {
+      (sub.artworks || []).forEach(artwork => {
         artworksCount++;
-        const artworkCard = createArtworkCard(challenge, sub, img);
+        const artworkCard = createArtworkCard(challenge, sub, artwork);
         grid.appendChild(artworkCard);
       });
     });
@@ -297,7 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return card;
   }
 
-  function createArtworkCard(challenge, submission, image) {
+  function createArtworkCard(challenge, submission, artwork) {
+    const image = artwork.image;
     const card = document.createElement('div');
     card.className = 'artwork-card';
 
@@ -307,20 +311,32 @@ document.addEventListener('DOMContentLoaded', () => {
     frame.title = 'Haz clic para ampliar con zoom pixel-perfect';
 
     const imgEl = document.createElement('img');
-    imgEl.src = image.path;
+    imgEl.src = assetUrl(image.path);
     imgEl.alt = `${challenge.theme} por @${submission.author}`;
     imgEl.className = 'pixel-art-view';
     imgEl.loading = 'lazy';
+    // Las imágenes pequeñas (p. ej. un GIF exportado a 32×32) se amplían a un múltiplo entero
+    if (image.width && image.height) {
+      const scale = Math.floor(CARD_IMAGE_SIZE / Math.max(image.width, image.height));
+      if (scale >= 2) imgEl.style.width = `${image.width * scale}px`;
+    }
     imgEl.onerror = () => {
       if (!imgEl.dataset.fallbackTried) {
         imgEl.dataset.fallbackTried = 'true';
-        imgEl.src = '../' + image.path;
+        imgEl.src = '../' + assetUrl(image.path);
       }
     };
 
     frame.appendChild(imgEl);
+    if (image.animated) {
+      const badge = document.createElement('span');
+      badge.className = 'artwork-badge';
+      badge.title = 'GIF animado';
+      badge.textContent = '▶ GIF';
+      frame.appendChild(badge);
+    }
     frame.addEventListener('click', () => {
-      openModal(challenge, submission, image);
+      openModal(challenge, submission, artwork);
     });
 
     // Footer con autor y botón de descarga o fuente
@@ -335,17 +351,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const actions = document.createElement('div');
     actions.className = 'artwork-actions';
 
-    // Si tiene archivo fuente (.aseprite)
-    if (submission.sources && submission.sources.length > 0) {
-      const source = submission.sources[0];
+    // Archivos fuente de este diseño (.aseprite, .psd...)
+    (artwork.sources || []).forEach(source => {
       const srcBtn = document.createElement('a');
-      srcBtn.href = source.path;
+      srcBtn.href = assetUrl(source.path);
       srcBtn.download = source.filename;
       srcBtn.className = 'btn-icon';
       srcBtn.title = `Descargar archivo fuente (${source.filename})`;
-      srcBtn.innerHTML = '💾 .ase';
+      srcBtn.textContent = `💾 ${source.filename.slice(source.filename.lastIndexOf('.'))}`;
       actions.appendChild(srcBtn);
-    }
+    });
 
     // Botón ampliar
     const zoomBtn = document.createElement('button');
@@ -354,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     zoomBtn.innerHTML = '🔍';
     zoomBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      openModal(challenge, submission, image);
+      openModal(challenge, submission, artwork);
     });
     actions.appendChild(zoomBtn);
 
@@ -366,34 +381,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Modal Functions
-  function openModal(challenge, submission, image) {
-    state.currentModalItem = { challenge, submission, image };
+  function openModal(challenge, submission, artwork) {
+    const image = artwork.image;
+    state.currentModalItem = { challenge, submission, artwork };
 
-    modalImage.src = image.path;
+    delete modalImage.dataset.fallbackTried;
     modalImage.onerror = () => {
       if (!modalImage.dataset.fallbackTried) {
         modalImage.dataset.fallbackTried = 'true';
-        modalImage.src = '../' + image.path;
+        modalImage.src = '../' + assetUrl(image.path);
       }
     };
+    modalImage.src = assetUrl(image.path);
     modalImage.alt = image.filename;
     modalWeek.textContent = `${challenge.week.toUpperCase()} · ${challenge.year}`;
-    modalTitle.textContent = image.filename;
+    modalTitle.textContent = artwork.name;
     modalAuthorName.textContent = `@${submission.author}`;
     modalTheme.textContent = challenge.theme || 'Libre';
     modalPalette.textContent = challenge.palette?.name || 'Lospec';
 
-    // Acciones del modal
-    modalActions.innerHTML = `
-      <a href="${escapeHtml(image.path)}" download="${escapeHtml(image.filename)}" class="retro-btn" style="text-align: center; justify-content: center;">
-        ⬇️ Descargar PNG
+    // Acciones del modal: la imagen, sus otras versiones (p. ej. 32x32) y sus archivos fuente
+    const downloadLink = (file, icon, extraClass) => `
+      <a href="${escapeHtml(assetUrl(file.path))}" download="${escapeHtml(file.filename)}" class="retro-btn ${extraClass}" style="text-align: center; justify-content: center;">
+        ${icon} Descargar ${escapeHtml(file.filename)}
       </a>
-      ${submission.sources && submission.sources.length > 0 ? `
-        <a href="${escapeHtml(submission.sources[0].path)}" download="${escapeHtml(submission.sources[0].filename)}" class="retro-btn btn-secondary" style="text-align: center; justify-content: center;">
-          💾 Descargar ${escapeHtml(submission.sources[0].filename)}
-        </a>
-      ` : ''}
     `;
+    modalActions.innerHTML = [
+      ...[image, ...(artwork.variants || [])].map(file => downloadLink(file, '⬇️', '')),
+      ...(artwork.sources || []).map(file => downloadLink(file, '💾', 'btn-secondary'))
+    ].join('');
 
     setModalZoom(state.currentZoom);
     setModalBg(state.currentBg);
@@ -405,7 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeModal() {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
-    modalImage.src = '';
+    // Quitar el src (en vez de vaciarlo) evita que salte onerror y pida una ruta inexistente
+    modalImage.onerror = null;
+    modalImage.removeAttribute('src');
   }
 
   function setModalZoom(zoomFactor) {
@@ -429,6 +447,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Codifica cada tramo de la ruta para que funcionen nombres con espacios, # o ?
+  function assetUrl(path) {
+    return path.split('/').map(encodeURIComponent).join('/');
+  }
+
   function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -443,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     galleryContainer.innerHTML = `
       <div class="empty-state">
         <p>⚠️ No se pudo cargar el archivo <code>data.json</code>.</p>
-        <p style="margin-top: 0.5rem; font-size: 0.85rem;">Si estás ejecutando en local, puedes abrir un servidor estático con <code>python3 -m http.server</code> dentro de <code>docs/</code>.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem;">Si estás ejecutando en local, genera el índice con <code>python3 scripts/build_gallery.py</code>, sirve la raíz del repositorio con <code>python3 -m http.server</code> y abre <code>/docs/</code>.</p>
       </div>
     `;
   }
