@@ -443,15 +443,16 @@ body::before {
   text-decoration: underline;
 }
 
+/* Las muestras miden 16px y se encogen si no caben (móvil) */
 .swatches-container {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(var(--swatch-columns, 16), minmax(0, 16px));
   gap: 4px;
+  min-width: 0;
 }
 
 .color-swatch {
-  width: 16px;
-  height: 16px;
+  aspect-ratio: 1;
   border-radius: 2px;
   border: 1px solid rgba(0, 0, 0, 0.6);
   cursor: pointer;
