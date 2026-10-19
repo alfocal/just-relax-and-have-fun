@@ -11,4 +11,5 @@
 
 ## 👥 Participaciones
 
-- [@usuario](usuario/): Participación de ejemplo ([test2.png](usuario/test2.png))
+- [@martambl](martambl/): [rest.png](martambl/rest.png)
+- [@sgarcia](sgarcia/): [rest.png](sgarcia/rest.png)

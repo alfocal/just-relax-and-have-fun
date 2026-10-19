@@ -89,9 +89,9 @@ just-relax-and-have-fun/
 │   └── 2026/
 │       └── w42/
 │           ├── challenge.md   # Información del reto (tema y paleta Lospec)
-│           └── usuario/       # Participación de ejemplo
-│               ├── test2.png
-│               └── test3.aseprite
+│           └── sgarcia/       # Una carpeta por participante (usuario de GitHub)
+│               ├── rest.png
+│               └── rest.aseprite
 ├── .gitignore
 ├── CLAUDE.md                  # Guía del proyecto para Claude Code
 └── README.md
