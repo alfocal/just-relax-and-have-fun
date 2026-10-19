@@ -5,6 +5,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Tamaño aproximado (px) al que se amplían en las tarjetas las imágenes pequeñas
   const CARD_IMAGE_SIZE = 192;
+  // Máximo de colores por fila en la muestra de la paleta
+  const MAX_SWATCH_COLUMNS = 16;
 
   const state = {
     challenges: [],
@@ -248,8 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let swatchesHtml = '';
     if (colors.length > 0) {
+      // Cuadrícula con filas equilibradas: 64 colores → 4 × 16, 60 → 4 × 15, 12 → 1 × 12
+      const rows = Math.ceil(colors.length / MAX_SWATCH_COLUMNS);
+      const columns = Math.ceil(colors.length / rows);
       swatchesHtml = `
-        <div class="swatches-container" title="Colores de la paleta">
+        <div class="swatches-container" title="Colores de la paleta" style="--swatch-columns: ${columns}">
           ${colors.map(c => `
             <span class="color-swatch" style="background-color: ${escapeHtml(c)}" title="${escapeHtml(c)}" onclick="navigator.clipboard.writeText('${escapeHtml(c)}')"></span>
           `).join('')}
