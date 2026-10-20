@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Botón ampliar
     const zoomBtn = document.createElement('button');
-    zoomBtn.className = 'btn-icon';
+    zoomBtn.className = 'btn-icon btn-zoom';
     zoomBtn.title = 'Ver en grande';
     zoomBtn.innerHTML = '🔍';
     zoomBtn.addEventListener('click', (e) => {
@@ -421,11 +421,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
   }
 
   function closeModal() {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
     // Quitar el src (en vez de vaciarlo) evita que salte onerror y pida una ruta inexistente
     modalImage.onerror = null;
     modalImage.removeAttribute('src');
@@ -435,9 +437,9 @@ document.addEventListener('DOMContentLoaded', () => {
     state.currentZoom = zoomFactor;
     // Base 32px multiplicado por el factor (o escalado relativo)
     // Para 32x32: 2x=64px, 4x=128px, 8x=256px, 12x=384px, 16x=512px
+    // Solo el ancho: el alto sale del aspect-ratio y así, si no cabe, se reduce sin deformarse
     const pxSize = 32 * zoomFactor;
     modalImage.style.width = `${pxSize}px`;
-    modalImage.style.height = `${pxSize}px`;
   }
 
   function setModalBg(bgType) {

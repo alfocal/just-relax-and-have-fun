@@ -107,7 +107,18 @@ tu_usuario/
 └── perro.aseprite
 ```
 
-### 4. Enviar mediante Pull Request
+### 4. Compruébalo en local (opcional)
+Antes de abrir la Pull Request puedes ver cómo quedará la galería con tu dibujo. Solo necesitas Python 3; desde la carpeta del repositorio:
+
+```bash
+python3 scripts/preview.py
+```
+
+Se abre la galería en tu navegador (`http://localhost:8000/`), igual que la web publicada. En la terminal verás si la revisión de la PR va a encontrar algún problema con tus archivos. Si cambias algo en tu carpeta, recarga la página. Para salir, pulsa `Ctrl+C`.
+
+¿Quieres verlo en el móvil? Usa `python3 scripts/preview.py --movil` y abre en el móvil la dirección que aparece (tienen que estar en la misma wifi).
+
+### 5. Enviar mediante Pull Request
 1. Crea una nueva rama en git (ej. `git checkout -b w42-tu-usuario`).
 2. Añade tu carpeta con tus archivos.
 3. Haz push a tu fork o al repositorio.

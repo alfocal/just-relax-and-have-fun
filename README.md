@@ -58,7 +58,8 @@ Participar es tan fácil como enviar una **Pull Request**:
                └── mi_dibujo.aseprite  <-- Archivo de trabajo editable (opcional)
    ```
    ¿Más de un diseño esa semana? Ponlos todos en tu carpeta, cada uno con su nombre y su archivo fuente con el mismo nombre (`gato.png` + `gato.aseprite`, `perro.png` + `perro.aseprite`).
-4. **Envía tu Pull Request:** Abre un PR con el título `W<semana> - <tu_usuario>`. Se comprobará automáticamente que la galería entienda tus archivos. En cuanto se apruebe, tu dibujo aparecerá en la web automáticamente.
+4. **Compruébalo en local (opcional):** Ejecuta `python3 scripts/preview.py` desde la carpeta del repositorio para ver la galería con tu dibujo antes de enviarlo. La terminal te avisa si la revisión de la PR va a encontrar algún problema. Más detalles en la [guía](PixelArt/README.md).
+5. **Envía tu Pull Request:** Abre un PR con el título `W<semana> - <tu_usuario>`. Se comprobará automáticamente que la galería entienda tus archivos. En cuanto se apruebe, tu dibujo aparecerá en la web automáticamente.
 
 ---
 
@@ -83,7 +84,8 @@ just-relax-and-have-fun/
 │   ├── app.js                 # Lógica interactiva y visor modal
 │   └── data.json              # Índice generado de retos y obras
 ├── scripts/
-│   └── build_gallery.py       # Generador del índice de obras y validador de participaciones
+│   ├── build_gallery.py       # Generador del índice de obras y validador de participaciones
+│   └── preview.py             # Previsualización local de la galería, igual que en GitHub Pages
 ├── PixelArt/
 │   ├── README.md              # Reglas oficiales y guía paso a paso
 │   └── 2026/

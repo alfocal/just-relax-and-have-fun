@@ -27,11 +27,12 @@ Cada Pull Request ejecuta `.github/workflows/validate-submissions.yml`, que lanz
 python3 scripts/build_gallery.py            # genera docs/data.json y lista avisos/errores
 python3 scripts/build_gallery.py --strict   # igual, pero sale con código 1 si hay errores (lo que corre en las PR)
 
-# Previsualizar: servir la RAÍZ del repo y abrir http://localhost:8000/docs/
-python3 -m http.server 8000
+# Previsualizar en http://localhost:8000/ (si el puerto está ocupado, usa el siguiente libre)
+python3 scripts/preview.py                   # abre el navegador; --sin-navegador para no abrirlo
+python3 scripts/preview.py --movil           # escucha en toda la red local para probar en el móvil
 ```
 
-Servir solo `docs/` no encuentra las imágenes: la web las pide en `PixelArt/...` y, si fallan, en `../PixelArt/...`.
+`preview.py` reproduce la estructura de GitHub Pages sin copiar nada (`docs/*` en la raíz, `PixelArt/` al lado), regenera `data.json` en cada carga de la página (la web lo pide con `?v=`), muestra los errores de validación cuando cambian y desactiva la caché. Si se sirve la raíz del repo con `python3 -m http.server`, la galería está en `/docs/`: la web pide las imágenes en `PixelArt/...` y, si fallan, en `../PixelArt/...`.
 
 No hay tests ni linters. Para validar cambios, ejecuta el script, revisa `docs/data.json` y abre la galería.
 
@@ -52,4 +53,4 @@ No hay tests ni linters. Para validar cambios, ejecuta el script, revisa `docs/d
 - Un autor puede subir varios diseños. Los archivos se agrupan por nombre sin extensión ni sufijo de tamaño (`_32x32`, `_8x`, `@8x`, `_x8`, `_large`, `_grande`, `_big`, `_small`, `_original`): cada grupo es una obra en `data.json` (`artworks[]` con `image` = la versión animada si la hay y si no la más grande, `variants` y `sources`). Un archivo fuente va con la imagen del mismo nombre; si el autor solo tiene un diseño, va con ese aunque el nombre no coincida.
 - Errores de validación (solo lo que impide que la galería muestre algo): archivo fuente sin imagen, subcarpetas, carpeta de autor sin imágenes. El tamaño y las proporciones de las imágenes **no** se validan a propósito: las normas son flexibles y se suelen subir escaladas (6x, 8x...).
 - GIF animados: `gif_frame_count()` recorre los bloques del GIF (sin dependencias) y, si hay más de un fotograma, la imagen lleva `"animated": true`; la web le pone la etiqueta `▶ GIF`. En las tarjetas, las imágenes pequeñas (PNG o GIF) se amplían a un múltiplo entero de su tamaño hasta unos 192 px (`CARD_IMAGE_SIZE` en `docs/app.js`).
-- El zoom del visor toma 32 px como base (8x = 256 px); las imágenes no cuadradas se ajustan sin deformarse (`object-fit: contain`). Las rutas se codifican en `assetUrl()` (`docs/app.js`), así que los nombres con espacios o `#` funcionan.
+- El zoom del visor toma 32 px como base (8x = 256 px) y solo fija el ancho: si no cabe (p. ej. 16x en móvil) se reduce al hueco disponible; las imágenes no cuadradas se ajustan sin deformarse (`object-fit: contain`). El visor nunca supera el alto de la pantalla: su contenido se desplaza y el botón de cerrar queda fijo. Las rutas se codifican en `assetUrl()` (`docs/app.js`), así que los nombres con espacios o `#` funcionan.
