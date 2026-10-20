@@ -541,28 +541,38 @@ body::before {
   background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
 }
 
+/* Pie de la tarjeta: el autor en su propia línea y los botones debajo,
+   para que la fuente pixelada (muy ancha) no compita por el espacio */
 .artwork-footer {
+  flex: 1;
   padding: 0.85rem 1rem;
   border-top: 1px solid var(--border-color);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.65rem;
 }
 
 .author-pill {
   font-family: var(--font-pixel);
   font-size: 0.65rem;
+  line-height: 1.5;
   color: var(--color-green);
   text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Los nombres muy largos pasan a otra línea en vez de cortarse */
+  overflow-wrap: anywhere;
 }
 
 .artwork-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
+  /* Si la tarjeta se estira para igualar la fila, los botones quedan abajo */
+  margin-top: auto;
+}
+
+/* La lupa siempre a la derecha, haya o no archivos fuente */
+.btn-zoom {
+  margin-left: auto;
 }
 
 .btn-icon {
@@ -577,6 +587,10 @@ body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+  min-width: 28px;
+  min-height: 28px;
 }
 
 .btn-icon:hover {
@@ -626,12 +640,22 @@ body::before {
   pointer-events: auto;
 }
 
+/* La página de detrás no se desplaza mientras el visor está abierto */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* El visor nunca es más alto que la pantalla: si no cabe, se desplaza su
+   contenido y el botón de cerrar sigue siempre a la vista */
 .modal-dialog {
   background: var(--bg-card);
   border: 2px solid var(--border-bright);
   box-shadow: 8px 8px 0px #000;
   max-width: 850px;
   width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
   position: relative;
   border-radius: 6px;
   overflow: hidden;
@@ -664,12 +688,11 @@ body::before {
 .modal-body {
   display: grid;
   grid-template-columns: 1fr 300px;
-}
-
-@media (max-width: 768px) {
-  .modal-body {
-    grid-template-columns: 1fr;
-  }
+  /* Las filas no se encogen para caber: lo que sobra se desplaza */
+  grid-auto-rows: max-content;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .modal-preview-wrapper {
@@ -679,6 +702,15 @@ body::before {
   justify-content: center;
   padding: 2rem;
   overflow: auto;
+}
+
+/* El zoom fija el ancho; si no cabe, la imagen se ajusta al hueco sin
+   deformarse (el alto sale del aspect-ratio, no de un valor fijo) */
+#modal-image {
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+  aspect-ratio: 1 / 1;
 }
 
 .modal-preview-wrapper.bg-dark {
@@ -783,6 +815,28 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+/* Visor en móvil: una sola columna, menos márgenes y la imagen por debajo
+   del botón de cerrar */
+@media (max-width: 768px) {
+  .modal-backdrop {
+    padding: 0.75rem;
+  }
+
+  .modal-body {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-preview-wrapper {
+    min-height: 0;
+    padding: 3rem 1rem 1.5rem;
+  }
+
+  .modal-info-panel {
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+  }
 }
 
 /* Footer */
