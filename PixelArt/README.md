@@ -89,9 +89,12 @@ PixelArt/
   - ⚠️ **Muy Importante:** Al reescalar o exportar, usa el filtro de interpolación **Vecino más próximo (*Nearest Neighbor* / Por aproximación)** para que los píxeles se mantengan 100% nítidos y no se vean borrosos.
   - Si quieres, también puedes incluir la versión a 32×32 original (ej. `dibujo_32x32.png` y `dibujo_large.png`). Los archivos con el mismo nombre y un sufijo de tamaño (`_32x32`, `_8x`, `@8x`, `_large`, `_grande`...) se muestran como una sola obra.
 - **🎞️ GIF animado (Opcional):**
-  - ¿Te animas a darle movimiento? Sube tu obra como `.gif` animado, con los mismos colores de la paleta. En la galería se reproduce sola y lleva la etiqueta **▶ GIF**.
+  - ¿Te animas a darle movimiento? Sube tu obra como `.gif` animado, con los mismos colores de la paleta. En la galería se ve quieta y se reproduce al pulsar el botón **▶ GIF**.
   - Puedes exportarlo a 32×32 o escalado (en Aseprite: *Archivo → Exportar como…* con formato `.gif` y el escalado que quieras); los GIF pequeños se amplían en la galería sin perder nitidez.
-  - Si subes la versión estática y la animada con el mismo nombre (`dibujo.png` + `dibujo.gif`), se muestran como una sola obra: se ve la animada y la estática queda para descargar.
+  - Si subes la versión estática y la animada con el mismo nombre (`dibujo.png` + `dibujo.gif`), se muestran como una sola obra: se ve la estática y **▶ GIF** cambia a la animada. Si solo subes el GIF, se ve su primer fotograma.
+- **⏱️ Timelapse (Opcional):**
+  - ¿Quieres enseñar cómo lo has dibujado? Sube el timelapse del proceso como `.gif` con el mismo nombre que tu imagen y el sufijo `_timelapse` (`dibujo.png` + `dibujo_timelapse.gif`). Es independiente del GIF animado: puedes subir uno, otro o los dos.
+  - En la galería aparece el botón **▶ TIMELAPSE** para verlo.
 - **💾 Fichero fuente (Opcional):**
   - Si quieres compartir tu proceso o capas, añade el archivo de origen de tu programa: `.aseprite`, `.psd`, `.kra`, etc.
   - Ponle el mismo nombre que a su imagen (`dibujo.png` + `dibujo.aseprite`) para que la galería sepa a qué obra pertenece.

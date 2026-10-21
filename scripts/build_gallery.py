@@ -27,6 +27,8 @@ SOURCE_EXTENSIONS = {".aseprite", ".ase", ".psd", ".kra", ".clip", ".xcf"}
 
 # Sufijos que marcan otra versión del mismo dibujo: gato_32x32.png, gato@8x.png, gato_large.png...
 VARIANT_SUFFIX_RE = re.compile(r"[\s_\-@]+(\d+x\d+|x\d+|\d+x|large|grande|big|small|original)$", re.IGNORECASE)
+# Timelapse del proceso de dibujo: gato_timelapse.gif, gato-time-lapse_8x.gif...
+TIMELAPSE_RE = re.compile(r"[\s_\-@]*time-?lapse", re.IGNORECASE)
 # Carpetas duplicadas por el explorador de archivos: "alfocal copia", "alfocal copy 2"...
 DUPLICATE_DIR_RE = re.compile(r"\s(copia|copy)(\s\d+)?$", re.IGNORECASE)
 # Colores de la paleta, escritos entre comillas invertidas: `#2e222f`
@@ -154,13 +156,14 @@ def gif_frame_count(filepath):
     return frames
 
 def design_name(filename):
-    """Nombre del diseño al que pertenece un archivo: sin extensión ni sufijo de tamaño."""
+    """Nombre del diseño al que pertenece un archivo: sin extensión ni sufijos de tamaño o de timelapse."""
     stem = os.path.splitext(filename)[0]
-    return VARIANT_SUFFIX_RE.sub("", stem) or stem
+    return VARIANT_SUFFIX_RE.sub("", TIMELAPSE_RE.sub("", stem)) or stem
 
 def build_submission(author, author_path, rel_dir):
-    """Agrupa los archivos de un autor en obras: una imagen principal, sus versiones y sus fuentes."""
+    """Agrupa los archivos de un autor en obras: una imagen principal, su GIF, su timelapse, sus versiones y sus fuentes."""
     images = []
+    timelapses = []
     sources = []
 
     for fname in sorted(os.listdir(author_path)):
@@ -180,37 +183,67 @@ def build_submission(author, author_path, rel_dir):
                 entry["width"], entry["height"] = size
             if ext == ".gif" and gif_frame_count(fpath) > 1:
                 entry["animated"] = True
-            images.append(entry)
+            if TIMELAPSE_RE.search(os.path.splitext(fname)[0]):
+                timelapses.append(entry)
+            else:
+                images.append(entry)
         elif ext in SOURCE_EXTENSIONS:
             sources.append(entry)
 
     # gato.png, gato_32x32.png y gato.gif son el mismo dibujo: se muestra la versión
-    # animada si la hay y, si no, la más grande
+    # estática más grande y el GIF animado (si lo hay) se ve al pulsar un botón
     groups = {}
     for img in images:
         groups.setdefault(design_name(img["filename"]).lower(), []).append(img)
 
+    def area(img):
+        return img.get("width", 0) * img.get("height", 0)
+
     artworks = {}
     for key, group in groups.items():
-        main = max(group, key=lambda i: (i.get("animated", False), i.get("width", 0) * i.get("height", 0)))
+        still = [i for i in group if not i.get("animated")]
+        animated = [i for i in group if i.get("animated")]
+        # Si solo hay GIF, es la imagen principal y la web muestra su primer fotograma
+        main = max(still or animated, key=area)
+        animation = max(animated, key=area) if still and animated else None
         artworks[key] = {
             "name": design_name(main["filename"]),
             "image": main,
-            "variants": [i for i in group if i is not main],
+            "animation": animation,
+            "timelapse": None,
+            "variants": [i for i in group if i is not main and i is not animation],
             "sources": []
         }
 
+    def owner(entry):
+        """Obra a la que acompaña un timelapse o un archivo fuente (None si no se sabe)."""
+        key = design_name(entry["filename"]).lower()
+        if key in artworks:
+            return artworks[key]
+        if len(artworks) == 1:
+            # Con un único diseño no hay duda de a qué imagen pertenece
+            return next(iter(artworks.values()))
+        return None
+
+    # gato_timelapse.gif acompaña a gato.png; si hay varios, el más grande y el resto para descargar
+    for timelapse in sorted(timelapses, key=area, reverse=True):
+        artwork = owner(timelapse)
+        if artwork is None:
+            report("error", os.path.join(author_path, timelapse["filename"]),
+                   "No hay ninguna imagen con el mismo nombre: llama igual al timelapse y a su imagen (p. ej. gato.png + gato_timelapse.gif).")
+        elif artwork["timelapse"] is None:
+            artwork["timelapse"] = timelapse
+        else:
+            artwork["variants"].append(timelapse)
+
     # gato.aseprite acompaña a gato.png
     for src in sources:
-        key = design_name(src["filename"]).lower()
-        if key in artworks:
-            artworks[key]["sources"].append(src)
-        elif len(artworks) == 1:
-            # Con un único diseño no hay duda de a qué imagen pertenece
-            next(iter(artworks.values()))["sources"].append(src)
-        else:
+        artwork = owner(src)
+        if artwork is None:
             report("error", os.path.join(author_path, src["filename"]),
                    "No hay ninguna imagen con el mismo nombre: llama igual al archivo fuente y a su imagen (p. ej. gato.png + gato.aseprite).")
+        else:
+            artwork["sources"].append(src)
 
     if not artworks:
         report("error", author_path, "No hay ninguna imagen (.png, .gif...) en la carpeta del autor.")
