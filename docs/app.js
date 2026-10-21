@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const CARD_IMAGE_SIZE = 192;
   // Máximo de colores por fila en la muestra de la paleta
   const MAX_SWATCH_COLUMNS = 16;
+  // Vistas en movimiento de una obra (además de la estática): etiqueta del botón de la tarjeta y su título
+  const MOVING_VIEWS = [
+    { view: 'animation', badge: 'GIF', title: 'la animación' },
+    { view: 'timelapse', badge: 'TIMELAPSE', title: 'el timelapse del proceso' }
+  ];
 
   const state = {
     challenges: [],
@@ -55,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalActions = document.getElementById('modal-actions');
   const zoomButtons = document.getElementById('zoom-buttons');
   const bgButtons = document.getElementById('bg-buttons');
+  const viewControl = document.getElementById('view-control');
+  const viewButtons = document.getElementById('view-buttons');
 
   // Fetch Gallery Data
   async function loadGalleryData() {
@@ -170,6 +177,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.classList.add('active');
         const bg = btn.dataset.bg;
         setModalBg(bg);
+      });
+    });
+
+    // Imagen estática / GIF animado / timelapse (solo los que tenga la obra)
+    viewButtons.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setModalView(btn.dataset.view);
       });
     });
   }
@@ -306,7 +320,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function createArtworkCard(challenge, submission, artwork) {
-    const image = artwork.image;
+    // Las obras se ven quietas hasta que se pulsa ▶ GIF o ▶ TIMELAPSE
+    let view = 'still';
     const card = document.createElement('div');
     card.className = 'artwork-card';
 
@@ -316,32 +331,44 @@ document.addEventListener('DOMContentLoaded', () => {
     frame.title = 'Haz clic para ampliar con zoom pixel-perfect';
 
     const imgEl = document.createElement('img');
-    imgEl.src = assetUrl(image.path);
     imgEl.alt = `${challenge.theme} por @${submission.author}`;
     imgEl.className = 'pixel-art-view';
     imgEl.loading = 'lazy';
-    // Las imágenes pequeñas (p. ej. un GIF exportado a 32×32) se amplían a un múltiplo entero
-    if (image.width && image.height) {
-      const scale = Math.floor(CARD_IMAGE_SIZE / Math.max(image.width, image.height));
-      if (scale >= 2) imgEl.style.width = `${image.width * scale}px`;
-    }
-    imgEl.onerror = () => {
-      if (!imgEl.dataset.fallbackTried) {
-        imgEl.dataset.fallbackTried = 'true';
-        imgEl.src = '../' + assetUrl(image.path);
-      }
-    };
-
+    imgEl.style.width = cardImageWidth([artwork.image, artwork.animation, artwork.timelapse]);
+    showArtworkImage(imgEl, artwork, view);
     frame.appendChild(imgEl);
-    if (image.animated) {
-      const badge = document.createElement('span');
-      badge.className = 'artwork-badge';
-      badge.title = 'GIF animado';
-      badge.textContent = '▶ GIF';
-      frame.appendChild(badge);
+
+    // Un botón por vista en movimiento: pulsarlo la pone y pulsarlo otra vez vuelve a la estática
+    const views = MOVING_VIEWS.filter(v => viewFile(artwork, v.view));
+    if (views.length > 0) {
+      const viewsBar = document.createElement('div');
+      viewsBar.className = 'artwork-views';
+      const buttons = views.map(v => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'artwork-badge';
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          view = view === v.view ? 'still' : v.view;
+          updateButtons();
+          showArtworkImage(imgEl, artwork, view);
+        });
+        viewsBar.appendChild(btn);
+        return btn;
+      });
+      const updateButtons = () => {
+        views.forEach((v, i) => {
+          const active = view === v.view;
+          buttons[i].textContent = `${active ? '⏸' : '▶'} ${v.badge}`;
+          buttons[i].title = active ? 'Ver la imagen estática' : `Ver ${v.title}`;
+          buttons[i].setAttribute('aria-pressed', active);
+        });
+      };
+      updateButtons();
+      frame.appendChild(viewsBar);
     }
     frame.addEventListener('click', () => {
-      openModal(challenge, submission, artwork);
+      openModal(challenge, submission, artwork, view);
     });
 
     // Footer con autor y botón de descarga o fuente
@@ -374,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
     zoomBtn.innerHTML = '🔍';
     zoomBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      openModal(challenge, submission, artwork);
+      openModal(challenge, submission, artwork, view);
     });
     actions.appendChild(zoomBtn);
 
@@ -386,18 +413,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Modal Functions
-  function openModal(challenge, submission, artwork) {
+  // Se abre con la obra como estuviera en su tarjeta: quieta, animada o con el timelapse
+  function openModal(challenge, submission, artwork, view = 'still') {
     const image = artwork.image;
     state.currentModalItem = { challenge, submission, artwork };
 
-    delete modalImage.dataset.fallbackTried;
-    modalImage.onerror = () => {
-      if (!modalImage.dataset.fallbackTried) {
-        modalImage.dataset.fallbackTried = 'true';
-        modalImage.src = '../' + assetUrl(image.path);
-      }
-    };
-    modalImage.src = assetUrl(image.path);
+    viewButtons.querySelectorAll('button').forEach(btn => {
+      btn.hidden = !viewFile(artwork, btn.dataset.view);
+    });
+    viewControl.hidden = !MOVING_VIEWS.some(v => viewFile(artwork, v.view));
+    setModalView(view);
     modalImage.alt = image.filename;
     modalWeek.textContent = `${challenge.week.toUpperCase()} · ${challenge.year}`;
     modalTitle.textContent = artwork.name;
@@ -405,14 +430,14 @@ document.addEventListener('DOMContentLoaded', () => {
     modalTheme.textContent = challenge.theme || 'Libre';
     modalPalette.textContent = challenge.palette?.name || 'Lospec';
 
-    // Acciones del modal: la imagen, sus otras versiones (p. ej. 32x32) y sus archivos fuente
+    // Acciones del modal: la imagen, su GIF, su timelapse, sus otras versiones (p. ej. 32x32) y sus archivos fuente
     const downloadLink = (file, icon, extraClass) => `
       <a href="${escapeHtml(assetUrl(file.path))}" download="${escapeHtml(file.filename)}" class="retro-btn ${extraClass}" style="text-align: center; justify-content: center;">
         ${icon} Descargar ${escapeHtml(file.filename)}
       </a>
     `;
     modalActions.innerHTML = [
-      ...[image, ...(artwork.variants || [])].map(file => downloadLink(file, '⬇️', '')),
+      ...[image, artwork.animation, artwork.timelapse, ...(artwork.variants || [])].filter(Boolean).map(file => downloadLink(file, '⬇️', '')),
       ...(artwork.sources || []).map(file => downloadLink(file, '💾', 'btn-secondary'))
     ].join('');
 
@@ -431,6 +456,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Quitar el src (en vez de vaciarlo) evita que salte onerror y pida una ruta inexistente
     modalImage.onerror = null;
     modalImage.removeAttribute('src');
+    delete modalImage.dataset.request;
+  }
+
+  function setModalView(view) {
+    viewButtons.querySelectorAll('button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.view === view);
+    });
+    showArtworkImage(modalImage, state.currentModalItem.artwork, view);
   }
 
   function setModalZoom(zoomFactor) {
@@ -452,6 +485,74 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (bgType === 'light') {
       modalCanvasWrapper.classList.add('bg-light');
     }
+  }
+
+  // Archivo de cada vista de la obra (null si no la tiene): 'still' es la imagen estática;
+  // 'animation', su GIF animado (si solo hay GIF, la propia imagen); 'timelapse', el del proceso
+  function viewFile(artwork, view) {
+    if (view === 'animation') return artwork.animation || (artwork.image.animated ? artwork.image : null);
+    if (view === 'timelapse') return artwork.timelapse || null;
+    return artwork.image;
+  }
+
+  // Ancho de la obra en la tarjeta: las imágenes pequeñas (p. ej. un GIF exportado a 32×32) se amplían
+  // a un múltiplo entero de su tamaño hasta unos CARD_IMAGE_SIZE px. Se calcula con la versión más
+  // pequeña para que todas las vistas (estática, GIF, timelapse) se vean igual de grandes al alternar.
+  function cardImageWidth(files) {
+    const sized = files.filter(file => file && file.width && file.height);
+    if (sized.length === 0) return '';
+    const base = sized.reduce((a, b) => (b.width < a.width ? b : a));
+    const scale = Math.max(1, Math.floor(CARD_IMAGE_SIZE / Math.max(base.width, base.height)));
+    return `${base.width * scale}px`;
+  }
+
+  // Pone en imgEl una vista de la obra. Si la obra solo tiene el GIF, la versión
+  // estática es su primer fotograma.
+  let imageRequests = 0;
+  function showArtworkImage(imgEl, artwork, view) {
+    const file = viewFile(artwork, view);
+    // Si se cambia de imagen antes de que llegue el primer fotograma, este se descarta
+    const request = imgEl.dataset.request = String(++imageRequests);
+    if (view !== 'still' || !file.animated) {
+      setPixelArtSrc(imgEl, file.path);
+      return;
+    }
+    firstFrameUrl(file.path).then(url => {
+      if (imgEl.dataset.request !== request) return;
+      imgEl.onerror = null;
+      imgEl.src = url;
+    });
+  }
+
+  // Primer fotograma de cada GIF, dibujado en un canvas (se guarda para no repetirlo)
+  const firstFrames = new Map();
+  function firstFrameUrl(path) {
+    if (!firstFrames.has(path)) {
+      firstFrames.set(path, new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          resolve(canvas.toDataURL());
+        };
+        setPixelArtSrc(img, path);
+      }));
+    }
+    return firstFrames.get(path);
+  }
+
+  // Pide la imagen en PixelArt/... y, si falla (raíz del repo servida con http.server), en ../PixelArt/...
+  function setPixelArtSrc(imgEl, path) {
+    let fallbackTried = false;
+    imgEl.onerror = () => {
+      if (!fallbackTried) {
+        fallbackTried = true;
+        imgEl.src = '../' + assetUrl(path);
+      }
+    };
+    imgEl.src = assetUrl(path);
   }
 
   // Codifica cada tramo de la ruta para que funcionen nombres con espacios, # o ?

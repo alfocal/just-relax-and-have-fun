@@ -514,19 +514,43 @@ body::before {
   transform: scale(1.08);
 }
 
-/* Etiqueta para GIFs animados */
-.artwork-badge {
+/* Botones de las obras con GIF o timelapse: alternan entre la imagen estática y la vista en movimiento */
+.artwork-views {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
+  left: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.3rem;
+  /* Los clics fuera de los botones llegan al marco y abren el visor */
+  pointer-events: none;
+}
+
+.artwork-badge {
+  pointer-events: auto;
   font-family: var(--font-pixel);
   font-size: 0.5rem;
+  line-height: 1;
   color: var(--color-yellow);
   background: var(--bg-card);
   border: 1px solid var(--border-bright);
   border-radius: 3px;
-  padding: 4px 5px;
-  pointer-events: none;
+  padding: 6px 7px;
+  cursor: pointer;
+}
+
+.artwork-badge:hover {
+  background: var(--color-purple);
+  color: #fff;
+  border-color: #000;
+}
+
+.artwork-badge[aria-pressed="true"] {
+  background: var(--color-cyan);
+  color: #000;
+  border-color: #000;
 }
 
 /* Checkerboard background for transparent PNGs */
