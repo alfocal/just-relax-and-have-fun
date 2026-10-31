@@ -711,7 +711,9 @@ body.modal-open {
 
 .modal-body {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  /* minmax(0, ...) para que un nombre largo sin espacios no ensanche la
+     columna más allá de la pantalla */
+  grid-template-columns: minmax(0, 1fr) 300px;
   /* Las filas no se encogen para caber: lo que sobra se desplaza */
   grid-auto-rows: max-content;
   min-height: 0;
@@ -752,6 +754,7 @@ body.modal-open {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  min-width: 0;
 }
 
 .modal-badge {
@@ -765,7 +768,8 @@ body.modal-open {
 .modal-title {
   font-size: 1.15rem;
   color: var(--text-main);
-  word-break: break-all;
+  /* Los nombres largos (wally_Monkey_island_cartographer) pasan a otra línea */
+  overflow-wrap: anywhere;
 }
 
 .modal-author {
@@ -841,6 +845,13 @@ body.modal-open {
   gap: 0.5rem;
 }
 
+/* Los botones de descarga llevan el nombre del archivo: si es largo, se parte
+   en varias líneas en vez de ensanchar el visor */
+.modal-actions .retro-btn {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
 /* Visor en móvil: una sola columna, menos márgenes y la imagen por debajo
    del botón de cerrar */
 @media (max-width: 768px) {
@@ -849,7 +860,7 @@ body.modal-open {
   }
 
   .modal-body {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .modal-preview-wrapper {

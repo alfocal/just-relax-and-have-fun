@@ -425,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setModalView(view);
     modalImage.alt = image.filename;
     modalWeek.textContent = `${challenge.week.toUpperCase()} · ${challenge.year}`;
-    modalTitle.textContent = artwork.name;
+    modalTitle.innerHTML = breakableName(artwork.name);
     modalAuthorName.textContent = `@${submission.author}`;
     modalTheme.textContent = challenge.theme || 'Libre';
     modalPalette.textContent = challenge.palette?.name || 'Lospec';
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Acciones del modal: la imagen, su GIF, su timelapse, sus otras versiones (p. ej. 32x32) y sus archivos fuente
     const downloadLink = (file, icon, extraClass) => `
       <a href="${escapeHtml(assetUrl(file.path))}" download="${escapeHtml(file.filename)}" class="retro-btn ${extraClass}" style="text-align: center; justify-content: center;">
-        ${icon} Descargar ${escapeHtml(file.filename)}
+        ${icon} Descargar ${breakableName(file.filename)}
       </a>
     `;
     modalActions.innerHTML = [
@@ -558,6 +558,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Codifica cada tramo de la ruta para que funcionen nombres con espacios, # o ?
   function assetUrl(path) {
     return path.split('/').map(encodeURIComponent).join('/');
+  }
+
+  // Nombres largos sin espacios (wally_Monkey_island_cartographer): permite
+  // partir la línea después de "_", "-" o "." en vez de en mitad de una palabra
+  function breakableName(str) {
+    return escapeHtml(str).replace(/([_.-])/g, '$1<wbr>');
   }
 
   function escapeHtml(str) {
