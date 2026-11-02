@@ -14,12 +14,16 @@
   --text-main: #e2e8f0;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
-  
+  --text-on-cyan: #000;
+
   --color-pink: #f43f5e;
   --color-green: #10b981;
   --color-cyan: #06b6d4;
   --color-yellow: #fbbf24;
   --color-purple: #8b5cf6;
+
+  --checker-light: #1e2235;
+  --checker-dark: #151827;
 
   --font-pixel: 'Press Start 2P', monospace;
   --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
@@ -47,6 +51,9 @@
   --color-yellow: #d97706;
   --color-purple: #7c3aed;
 
+  --checker-light: #e6e6e6;
+  --checker-dark: #cccccc;
+
   --shadow-retro: 3px 3px 0px rgba(15, 23, 42, 0.7);
   --shadow-retro-hover: 1px 1px 0px rgba(15, 23, 42, 0.7);
 }
@@ -63,12 +70,16 @@
   --text-main: #0f380f;
   --text-muted: #306230;
   --text-dim: #446944;
+  --text-on-cyan: #9bbc0f;
   
   --color-pink: #0f380f;
   --color-green: #306230;
   --color-cyan: #0f380f;
   --color-yellow: #306230;
   --color-purple: #306230;
+
+  --checker-light: #9bbc0f;
+  --checker-dark: #8bac0f;
 
   --shadow-retro: 3px 3px 0px #0f380f;
   --shadow-retro-hover: 1px 1px 0px #0f380f;
@@ -93,6 +104,9 @@
   --color-yellow: #ffec27;
   --color-purple: #83769c;
 
+  --checker-light: #1d2b53;
+  --checker-dark: #111d35;
+
   --shadow-retro: 3px 3px 0px #000;
   --shadow-retro-hover: 1px 1px 0px #000;
 }
@@ -115,6 +129,9 @@
   --color-cyan: #00ffff;
   --color-yellow: #ffff00;
   --color-purple: #bd00ff;
+
+  --checker-light: #2b1357;
+  --checker-dark: #1e0d3d;
 
   --shadow-retro: 3px 3px 0px #000;
   --shadow-retro-hover: 1px 1px 0px #000;
@@ -549,18 +566,18 @@ body::before {
 
 .artwork-badge[aria-pressed="true"] {
   background: var(--color-cyan);
-  color: #000;
+  color: var(--text-on-cyan);
   border-color: #000;
 }
 
 /* Checkerboard background for transparent PNGs */
 .checker-bg {
-  background-color: #1e2235;
-  background-image: 
-    linear-gradient(45deg, #151827 25%, transparent 25%), 
-    linear-gradient(-45deg, #151827 25%, transparent 25%), 
-    linear-gradient(45deg, transparent 75%, #151827 75%), 
-    linear-gradient(-45deg, transparent 75%, #151827 75%);
+  background-color: var(--checker-light);
+  background-image:
+    linear-gradient(45deg, var(--checker-dark) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checker-dark) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checker-dark) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checker-dark) 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
 }
@@ -808,7 +825,7 @@ body.modal-open {
 
 .btn-sm.active {
   background: var(--color-cyan);
-  color: #000;
+  color: var(--text-on-cyan);
   border-color: #000;
   font-weight: 700;
 }
