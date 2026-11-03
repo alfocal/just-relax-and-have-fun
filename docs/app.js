@@ -291,23 +291,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const grid = document.createElement('div');
     grid.className = 'artworks-grid';
 
-    const submissions = challenge.submissions || [];
-    let artworksCount = 0;
+    // Cada obra en su sitio según cuándo llegó, aunque sean del mismo autor
+    // (a igualdad de fecha, se mantiene el orden por nombre de data.json)
+    const entries = (challenge.submissions || [])
+      .filter(sub => state.selectedAuthor === 'all' || sub.author === state.selectedAuthor)
+      .flatMap(sub => (sub.artworks || []).map(artwork => ({ sub, artwork })))
+      .sort((a, b) => a.artwork.arrivedAt - b.artwork.arrivedAt);
 
-    submissions.forEach(sub => {
-      // Si el autor está filtrado y no coincide, saltar
-      if (state.selectedAuthor !== 'all' && sub.author !== state.selectedAuthor) {
-        return;
-      }
-
-      (sub.artworks || []).forEach(artwork => {
-        artworksCount++;
-        const artworkCard = createArtworkCard(challenge, sub, artwork);
-        grid.appendChild(artworkCard);
-      });
+    entries.forEach(({ sub, artwork }) => {
+      grid.appendChild(createArtworkCard(challenge, sub, artwork));
     });
 
-    if (artworksCount === 0) {
+    if (entries.length === 0) {
       grid.innerHTML = `
         <div class="empty-state" style="grid-column: 1 / -1; padding: 2rem 1rem;">
           <p>Aún no hay obras subidas para esta semana. ¡Sé el primero en enviar un Pull Request! 🎨</p>

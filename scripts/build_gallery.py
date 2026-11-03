@@ -16,6 +16,7 @@ import re
 import struct
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -174,7 +175,7 @@ def git_arrivals():
             cwd=ROOT_DIR, capture_output=True, check=True, encoding="utf-8", errors="replace"
         ).stdout
     except (OSError, subprocess.CalledProcessError):
-        report("aviso", ROOT_DIR, "No se pudo leer el historial de git: las participaciones se ordenan por nombre.")
+        report("aviso", ROOT_DIR, "No se pudo leer el historial de git: las obras se ordenan por nombre.")
         return {}
 
     arrivals = {}
@@ -194,15 +195,9 @@ def git_arrivals():
             next(tokens)  # M, D o T: no cambian la fecha de llegada
     return arrivals
 
-def arrival_of(artwork, arrivals):
-    """Cuándo llegó una obra: la fecha de su archivo más antiguo (lo que aún no está en git va al final)."""
-    files = [artwork["image"], artwork["animation"], artwork["timelapse"], *artwork["variants"], *artwork["sources"]]
-    return min((arrivals[f["path"]] for f in files if f and f["path"] in arrivals), default=float("inf"))
-
-def folder_arrival(rel_dir, arrivals):
-    """Cuándo llegó una participación: el primer archivo que hubo en la carpeta del autor, aunque ya no esté."""
-    prefix = f"{rel_dir}/"
-    return min((date for path, date in arrivals.items() if path.startswith(prefix)), default=float("inf"))
+def oldest_arrival(paths, arrivals):
+    """Fecha del archivo más antiguo de la lista. Lo que aún no está en git llega ahora, así que va al final."""
+    return min((arrivals[path] for path in paths if path in arrivals), default=int(time.time()))
 
 def build_submission(author, author_path, rel_dir, arrivals):
     """Agrupa los archivos de un autor en obras: una imagen principal, su GIF, su timelapse, sus versiones y sus fuentes."""
@@ -293,9 +288,17 @@ def build_submission(author, author_path, rel_dir, arrivals):
         report("error", author_path, "No hay ninguna imagen (.png, .gif...) en la carpeta del autor.")
         return None
 
+    # Cada obra llega con su archivo más antiguo; la primera del autor, con lo primero que
+    # hubo en su carpeta, aunque ya no esté (quien borra y vuelve a subir conserva su sitio)
+    for artwork in artworks.values():
+        files = [artwork["image"], artwork["animation"], artwork["timelapse"], *artwork["variants"], *artwork["sources"]]
+        artwork["arrivedAt"] = oldest_arrival([f["path"] for f in files if f], arrivals)
+    first = min(artworks.values(), key=lambda a: a["arrivedAt"])
+    first["arrivedAt"] = min(first["arrivedAt"], oldest_arrival([p for p in arrivals if p.startswith(f"{rel_dir}/")], arrivals))
+
     return {
         "author": author,
-        "artworks": sorted(artworks.values(), key=lambda a: arrival_of(a, arrivals))
+        "artworks": list(artworks.values())
     }
 
 def build_gallery():
@@ -353,9 +356,6 @@ def build_gallery():
                 submission = build_submission(author, author_path, f"PixelArt/{year}/{week}/{author}", arrivals)
                 if submission:
                     challenge_entry["submissions"].append(submission)
-
-            # Por orden de llegada; a igualdad de fecha se mantiene el orden por nombre
-            challenge_entry["submissions"].sort(key=lambda s: folder_arrival(f"PixelArt/{year}/{week}/{s['author']}", arrivals))
 
             challenges.append(challenge_entry)
 
