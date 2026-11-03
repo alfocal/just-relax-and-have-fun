@@ -14,6 +14,7 @@ import json
 import os
 import re
 import struct
+import subprocess
 import sys
 from datetime import datetime, timezone
 
@@ -160,7 +161,50 @@ def design_name(filename):
     stem = os.path.splitext(filename)[0]
     return VARIANT_SUFFIX_RE.sub("", TIMELAPSE_RE.sub("", stem)) or stem
 
-def build_submission(author, author_path, rel_dir):
+def git_arrivals():
+    """Devuelve {ruta: fecha} con el momento en que cada archivo de PixelArt/ llegó según git (también los ya borrados).
+
+    Sigue los renombrados: quien cambia el nombre de su carpeta conserva su sitio.
+    Necesita el historial completo: en un clon superficial todo parece llegar a la vez.
+    """
+    try:
+        output = subprocess.run(
+            ["git", "log", "--reverse", "--topo-order", "--full-history", "-M", "-z",
+             "--name-status", "--format=%at", "--", "PixelArt"],
+            cwd=ROOT_DIR, capture_output=True, check=True, encoding="utf-8", errors="replace"
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        report("aviso", ROOT_DIR, "No se pudo leer el historial de git: las participaciones se ordenan por nombre.")
+        return {}
+
+    arrivals = {}
+    timestamp = None
+    tokens = iter(output.split("\0"))
+    for token in tokens:
+        status = token.strip()
+        if status.isdigit():
+            timestamp = int(status)
+        elif status == "A":
+            path = next(tokens)
+            arrivals[path] = min(arrivals.get(path, timestamp), timestamp)
+        elif status.startswith("R"):
+            old, new = next(tokens), next(tokens)
+            arrivals[new] = min(arrivals.get(old, timestamp), arrivals.get(new, timestamp))
+        elif status:
+            next(tokens)  # M, D o T: no cambian la fecha de llegada
+    return arrivals
+
+def arrival_of(artwork, arrivals):
+    """Cuándo llegó una obra: la fecha de su archivo más antiguo (lo que aún no está en git va al final)."""
+    files = [artwork["image"], artwork["animation"], artwork["timelapse"], *artwork["variants"], *artwork["sources"]]
+    return min((arrivals[f["path"]] for f in files if f and f["path"] in arrivals), default=float("inf"))
+
+def folder_arrival(rel_dir, arrivals):
+    """Cuándo llegó una participación: el primer archivo que hubo en la carpeta del autor, aunque ya no esté."""
+    prefix = f"{rel_dir}/"
+    return min((date for path, date in arrivals.items() if path.startswith(prefix)), default=float("inf"))
+
+def build_submission(author, author_path, rel_dir, arrivals):
     """Agrupa los archivos de un autor en obras: una imagen principal, su GIF, su timelapse, sus versiones y sus fuentes."""
     images = []
     timelapses = []
@@ -251,7 +295,7 @@ def build_submission(author, author_path, rel_dir):
 
     return {
         "author": author,
-        "artworks": list(artworks.values())
+        "artworks": sorted(artworks.values(), key=lambda a: arrival_of(a, arrivals))
     }
 
 def build_gallery():
@@ -264,6 +308,8 @@ def build_gallery():
     if not os.path.exists(PIXELART_DIR):
         print(f"No se encontró el directorio {PIXELART_DIR}")
         return 0
+
+    arrivals = git_arrivals()
 
     # Buscar años en PixelArt (carpetas numéricas)
     years = sorted([d for d in os.listdir(PIXELART_DIR) if os.path.isdir(os.path.join(PIXELART_DIR, d)) and d.isdigit()], reverse=True)
@@ -304,9 +350,12 @@ def build_gallery():
                 if DUPLICATE_DIR_RE.search(author):
                     report("aviso", author_path, "Carpeta ignorada: parece una copia duplicada.")
                     continue
-                submission = build_submission(author, author_path, f"PixelArt/{year}/{week}/{author}")
+                submission = build_submission(author, author_path, f"PixelArt/{year}/{week}/{author}", arrivals)
                 if submission:
                     challenge_entry["submissions"].append(submission)
+
+            # Por orden de llegada; a igualdad de fecha se mantiene el orden por nombre
+            challenge_entry["submissions"].sort(key=lambda s: folder_arrival(f"PixelArt/{year}/{week}/{s['author']}", arrivals))
 
             challenges.append(challenge_entry)
 

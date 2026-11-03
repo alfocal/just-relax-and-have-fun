@@ -24,6 +24,9 @@ jobs:
     steps:
       - name: Checkout repositorio
         uses: actions/checkout@v4
+        with:
+          # Historial completo: build_gallery.py ordena las participaciones por fecha de llegada
+          fetch-depth: 0
 
       - name: Configurar Python
         uses: actions/setup-python@v5
