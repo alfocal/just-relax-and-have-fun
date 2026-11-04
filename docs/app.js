@@ -261,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const paletteName = challenge.palette?.name || 'Paleta aleatoria';
     const paletteUrl = challenge.palette?.url || 'https://lospec.com/palette-list/random';
     const colors = challenge.palette?.colors || [];
+    const paletteFile = challenge.palette?.file;
 
     let swatchesHtml = '';
     if (colors.length > 0) {
@@ -282,6 +283,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <a href="${escapeHtml(paletteUrl)}" target="_blank" rel="noopener" class="palette-link">
           ${escapeHtml(paletteName)} ↗
         </a>
+        ${paletteFile ? `
+          <a href="${escapeHtml(assetUrl(paletteFile.path))}" download="${escapeHtml(paletteFile.filename)}" class="btn-icon" title="Descargar la paleta (${escapeHtml(paletteFile.filename)})">⬇️ .pal</a>
+        ` : ''}
       </div>
       ${swatchesHtml}
     `;

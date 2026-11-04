@@ -30,6 +30,7 @@ Cualquier miembro del grupo u organizador de turno puede preparar el reto de la 
    - Estructura de carpetas: `PixelArt/<AÑO>/w<Nº_SEMANA>/`
      *Ejemplo:* `PixelArt/2026/w42/`
    - Dentro de esa carpeta, crea el archivo `challenge.md` usando la plantilla a continuación.
+   - No hace falta nada más: al llegar a `main`, se genera y se guarda solo `palette.pal` en esa carpeta a partir de los colores de `challenge.md`. Es el archivo que se descarga desde la galería con el botón **⬇️ .pal**.
 
 ### 📋 Plantilla para `challenge.md`
 
@@ -77,6 +78,7 @@ PixelArt/
 └── 2026/
     └── w42/
         ├── challenge.md
+        ├── palette.pal          <-- Paleta de la semana (para importarla en tu editor)
         └── tu_usuario/          <-- Tu carpeta
             ├── dibujo.png       <-- Tu imagen PNG (agrandada)
             └── dibujo.aseprite  <-- Archivo fuente (opcional)

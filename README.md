@@ -46,7 +46,7 @@ Cada semana tenemos un nuevo reto publicado en la carpeta [`PixelArt/`](PixelArt
 Participar es tan fácil como enviar una **Pull Request**:
 
 1. **Revisa el reto semanal:** Ve a la carpeta `PixelArt/<año>/w<semana>/` y lee el archivo `challenge.md` (o consulta la [Galería Web](https://alfocal.github.io/just-relax-and-have-fun/)).
-2. **Crea tu dibujo:** Dibuja a **32x32 px** usando únicamente los colores de la paleta indicada.
+2. **Crea tu dibujo:** Dibuja a **32x32 px** usando únicamente los colores de la paleta indicada. Puedes descargarla desde la galería (**⬇️ .pal**) e importarla en tu editor.
 3. **Prepara tu carpeta:**
    ```text
    PixelArt/
@@ -77,7 +77,8 @@ Disponemos de un visor interactivo publicado con GitHub Pages donde puedes ver t
 just-relax-and-have-fun/
 ├── .github/workflows/
 │   ├── deploy-pages.yml           # Despliegue a GitHub Pages
-│   └── validate-submissions.yml   # Revisión automática de cada Pull Request
+│   ├── validate-submissions.yml   # Revisión automática de cada Pull Request
+│   └── commit-palettes.yml    # Guarda el palette.pal de cada reto nuevo
 ├── docs/                      # Archivos de la Galería Web (GitHub Pages)
 │   ├── index.html             # Interfaz web retro de la galería
 │   ├── style.css              # Estilos pixel art / retro arcade
@@ -91,6 +92,7 @@ just-relax-and-have-fun/
 │   └── 2026/
 │       └── w42/
 │           ├── challenge.md   # Información del reto (tema y paleta Lospec)
+│           ├── palette.pal    # Paleta descargable, generada desde challenge.md
 │           └── sgarcia/       # Una carpeta por participante (usuario de GitHub)
 │               ├── rest.png
 │               └── rest.aseprite
