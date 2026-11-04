@@ -17,6 +17,7 @@ import struct
 import subprocess
 import sys
 import time
+import unicodedata
 from datetime import datetime, timezone
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,6 +36,8 @@ TIMELAPSE_RE = re.compile(r"[\s_\-@]*time-?lapse", re.IGNORECASE)
 DUPLICATE_DIR_RE = re.compile(r"\s(copia|copy)(\s\d+)?$", re.IGNORECASE)
 # Colores de la paleta, escritos entre comillas invertidas: `#2e222f`
 HEX_COLOR_RE = re.compile(r"`(#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3}))`")
+# Paleta descargable de cada semana, generada desde los colores de challenge.md
+PALETTE_FILENAME = "palette.pal"
 
 # Problemas encontrados durante la generación: (nivel, ruta relativa, mensaje)
 problems = []
@@ -109,6 +112,40 @@ def parse_challenge_md(filepath):
     data["palette"]["colors"] = unique_colors
 
     return data
+
+def palette_file_text(colors):
+    """Contenido de un archivo de paleta JASC-PAL (el mismo formato que el .pal de Lospec)."""
+    lines = ["JASC-PAL", "0100", str(len(colors))]
+    for color in colors:
+        digits = color[1:]
+        if len(digits) == 3:  # #abc -> #aabbcc
+            digits = "".join(d * 2 for d in digits)
+        lines.append(" ".join(str(int(digits[i:i + 2], 16)) for i in (0, 2, 4)))
+    return "\n".join(lines) + "\n"
+
+def sync_palette_file(week_path, rel_dir, palette):
+    """Crea o actualiza el .pal de la semana y devuelve su entrada para data.json (None si no hay colores)."""
+    if not palette["colors"]:
+        return None
+
+    path = os.path.join(week_path, PALETTE_FILENAME)
+    expected = palette_file_text(palette["colors"])
+    try:
+        with open(path, "r", encoding="ascii", errors="replace") as f:
+            current = f.read()
+    except OSError:
+        current = None
+
+    if current != expected:
+        # Saltos de línea CRLF, como los .pal de Lospec
+        with open(path, "w", encoding="ascii", newline="\r\n") as f:
+            f.write(expected)
+        report("aviso", path, "Paleta generada desde challenge.md: se guardará sola en el repositorio al llegar a main.")
+
+    # Se descarga con el nombre de la paleta: "N (L) ES" -> n-l-es.pal
+    ascii_name = unicodedata.normalize("NFKD", palette["name"]).encode("ascii", "ignore").decode()
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-") or "paleta"
+    return {"filename": f"{slug}.pal", "path": f"{rel_dir}/{PALETTE_FILENAME}"}
 
 def image_size(filepath):
     """Devuelve (ancho, alto) de un PNG o GIF, o None si no se puede leer."""
@@ -328,6 +365,7 @@ def build_gallery():
             if not os.path.exists(challenge_md):
                 report("aviso", week_path, "Falta challenge.md: se usarán un tema y una paleta genéricos.")
             meta = parse_challenge_md(challenge_md)
+            meta["palette"]["file"] = sync_palette_file(week_path, f"PixelArt/{year}/{week}", meta["palette"])
 
             week_num = int(re.sub(r"\D", "", week) or 0)
             challenge_entry = {

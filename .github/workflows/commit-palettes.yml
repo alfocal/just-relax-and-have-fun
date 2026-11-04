@@ -1,0 +1,48 @@
+name: Guardar paletas de los retos
+
+# Al publicar o cambiar un challenge.md, guarda en el repositorio el palette.pal de esa semana
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'PixelArt/**/challenge.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "paletas"
+  cancel-in-progress: false
+
+jobs:
+  commit-palettes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generar paletas
+        run: |
+          python3 scripts/build_gallery.py
+
+      - name: Subir las paletas nuevas o cambiadas
+        run: |
+          git add 'PixelArt/*/palette.pal'
+          if git diff --cached --quiet; then
+            echo "Las paletas ya están al día."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Actualizar paletas descargables"
+          git pull --rebase origin main
+          git push origin HEAD:main
