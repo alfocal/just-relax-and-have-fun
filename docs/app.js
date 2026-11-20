@@ -33,14 +33,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const themeSelect = document.getElementById('theme-select');
 
   // Inicializar Tema visual
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    // La barra del navegador en el móvil (y la ventana de la PWA) toma el color de fondo del tema
+    if (themeColorMeta) {
+      themeColorMeta.content = getComputedStyle(document.documentElement).getPropertyValue('--bg-dark').trim();
+    }
+  }
+
   function initTheme() {
     const savedTheme = localStorage.getItem('pixelart_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+    applyTheme(savedTheme);
     if (themeSelect) {
       themeSelect.value = savedTheme;
       themeSelect.addEventListener('change', (e) => {
         const newTheme = e.target.value;
-        document.documentElement.setAttribute('data-theme', newTheme);
+        applyTheme(newTheme);
         localStorage.setItem('pixelart_theme', newTheme);
       });
     }

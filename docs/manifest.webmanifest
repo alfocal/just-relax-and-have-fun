@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "Just Relax and Have Fun - Pixel Art Gallery",
+  "short_name": "Just Relax",
+  "description": "Galería de retos semanales de pixel art entre amigos.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f111a",
+  "theme_color": "#0f111a",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -39,7 +39,8 @@ No hay tests ni linters. Para validar cambios, ejecuta el script, revisa `docs/d
 ## Convenciones
 
 - Python solo con librería estándar; JS/CSS sin dependencias ni bundler. No añadas dependencias sin motivo.
-- Temas visuales de la web: variables CSS bajo `[data-theme="..."]` en `docs/style.css` + `<option>` en `docs/index.html`.
+- Temas visuales de la web: variables CSS bajo `[data-theme="..."]` en `docs/style.css` + `<option>` en `docs/index.html`. `app.js` copia el `--bg-dark` del tema en `<meta name="theme-color">` (barra del navegador en el móvil y ventana de la PWA).
+- Favicon e iconos de la PWA (`docs/manifest.webmanifest`): todos salen del mismo pixel art de 32×32 (`favicon.svg`), escalado a múltiplos enteros sin suavizado: `favicon.png` ×16 (512 px), `icon-192.png` ×6. `apple-touch-icon.png` (180 px) e `icon-maskable.png` (512 px) llevan fondo opaco `#181b2a` (iOS pinta de negro lo transparente); en la maskable el dibujo cabe en el círculo central del 80 %. Las rutas son relativas porque la web vive en `/just-relax-and-have-fun/`.
 
 ## Commits y Pull Requests
 
