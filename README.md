@@ -97,7 +97,8 @@ just-relax-and-have-fun/
 │               ├── rest.png
 │               └── rest.aseprite
 ├── .gitignore
-├── CLAUDE.md                  # Guía del proyecto para Claude Code
+├── AGENTS.md                  # Guía del proyecto para agentes de código
+├── CLAUDE.md                  # Importa AGENTS.md para Claude Code
 └── README.md
 ```
 
