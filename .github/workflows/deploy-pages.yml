@@ -16,10 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repositorio
@@ -45,13 +42,43 @@ jobs:
           touch _site/.nojekyll
 
       - name: Configurar GitHub Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Subir artefacto de Pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: '_site'
 
+  # El despliegue va en otro job: GitHub tarda a veces en listar el artefacto recién subido
+  # (https://github.com/actions/deploy-pages/issues/451) y, si falla, «Re-run failed jobs»
+  # repite solo este job sin subir un segundo artefacto "github-pages" (eso también da error).
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.intento1.outputs.page_url || steps.intento2.outputs.page_url || steps.intento3.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Desplegar en GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        id: intento1
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+
+      - name: Esperar a que GitHub liste el artefacto
+        if: steps.intento1.outcome == 'failure'
+        run: sleep 30
+
+      - name: Desplegar en GitHub Pages (2.º intento)
+        id: intento2
+        if: steps.intento1.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+
+      - name: Esperar un poco más
+        if: steps.intento1.outcome == 'failure' && steps.intento2.outcome == 'failure'
+        run: sleep 90
+
+      - name: Desplegar en GitHub Pages (último intento)
+        id: intento3
+        if: steps.intento1.outcome == 'failure' && steps.intento2.outcome == 'failure'
+        uses: actions/deploy-pages@v5
